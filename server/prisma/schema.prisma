@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+
+}
+
+model Peminjam {
+  idPeminjam     Int      @id @default(autoincrement()) @map("id_peminjam")
+  namaPeminjam   String   @map("nama_peminjam")
+  tglDaftar      DateTime @default(now()) @map("tgl_daftar")
+  userPeminjam   String   @unique @map("user_peminjam")
+  passPeminjam   String   @map("pass_peminjam")
+  fotoPeminjam   String?  @map("foto_peminjam")
+  statusPeminjam String   @default("aktif") @map("status_peminjam") // aktif, tidak aktif
+
+  peminjaman Peminjaman[]
+
+  @@map("peminjam")
+}
+
+model Admin {
+  idAdmin   Int    @id @default(autoincrement()) @map("id_admin")
+  namaAdmin String @map("nama_admin")
+  userAdmin String @unique @map("user_admin")
+  passAdmin String @map("pass_admin")
+
+  peminjaman Peminjaman[]
+
+  @@map("admin")
+}
+
+model Buku {
+  idBuku        Int      @id @default(autoincrement()) @map("id_buku")
+  judulBuku     String   @map("judul_buku")
+  tglTerbit     DateTime @map("tgl_terbit")
+  namaPengarang String   @map("nama_pengarang")
+  namaPenerbit  String   @map("nama_penerbit")
+
+  detilPeminjaman DetilPeminjaman[]
+
+  @@map("buku")
+}
+
+model Peminjaman {
+  kodePinjam       Int       @id @default(autoincrement()) @map("kode_pinjam")
+  idAdmin          Int?      @map("id_admin")
+  idPeminjam       Int       @map("id_peminjam")
+  tglPesan         DateTime  @default(now()) @map("tgl_pesan")
+  tglAmbil         DateTime? @map("tgl_ambil")
+  tglWajibKembali  DateTime? @map("tgl_wajibkembali")
+  tglKembali       DateTime? @map("tgl_kembali")
+  statusPinjam     String    @default("diproses") @map("status_pinjam") // diproses, disetujui, ditolak, selesai
+
+  admin    Admin?   @relation(fields: [idAdmin], references: [idAdmin])
+  peminjam Peminjam @relation(fields: [idPeminjam], references: [idPeminjam])
+
+  detilPeminjaman DetilPeminjaman[]
+
+  @@map("peminjaman")
+}
+
+model DetilPeminjaman {
+  kodePinjam Int @map("kode_pinjam")
+  idBuku     Int @map("id_buku")
+
+  peminjaman Peminjaman @relation(fields: [kodePinjam], references: [kodePinjam])
+  buku       Buku       @relation(fields: [idBuku], references: [idBuku])
+
+  @@id([kodePinjam, idBuku])
+  @@map("detil_peminjaman")
+}
